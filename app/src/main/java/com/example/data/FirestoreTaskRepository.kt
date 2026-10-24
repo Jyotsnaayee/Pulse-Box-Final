@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 class FirestoreTaskRepository {
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    private val firestore by lazy { com.google.firebase.firestore.FirebaseFirestore.getInstance() }
+    private val auth by lazy { com.google.firebase.auth.FirebaseAuth.getInstance() }
 
     private fun getUserTasksCollection() = 
         auth.currentUser?.let { user ->

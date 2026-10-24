@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
 
 class AuthRepository(private val context: Context) {
-    private val auth = FirebaseAuth.getInstance()
-    private val credentialManager = CredentialManager.create(context)
+    private val auth by lazy { com.google.firebase.auth.FirebaseAuth.getInstance() }
+    private val credentialManager by lazy { androidx.credentials.CredentialManager.create(context) }
 
     private val _currentUser = MutableStateFlow(auth.currentUser)
     val currentUser: StateFlow<com.google.firebase.auth.FirebaseUser?> = _currentUser

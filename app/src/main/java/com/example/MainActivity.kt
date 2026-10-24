@@ -17,7 +17,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.data.AppDatabase
 import com.example.data.FirestoreTaskRepository
 import com.example.data.auth.AuthRepository
 import com.example.ui.auth.LoginScreen
@@ -29,12 +28,14 @@ import com.example.ui.tasks.TaskViewModel
 import com.example.ui.tasks.TaskViewModelFactory
 import com.example.ui.theme.PulseBoxTheme
 import com.example.ui.tools.*
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
+        FirebaseApp.initializeApp(this)
         val authRepository = AuthRepository(this)
         val firestoreRepository = FirestoreTaskRepository()
         
