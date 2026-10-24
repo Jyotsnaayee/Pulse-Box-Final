@@ -17,14 +17,15 @@ class FirestoreTaskRepository {
             firestore.collection("users").document(user.uid).collection("tasks")
         }
 
-    val allTasks: Flow<List<Task>> = getUserTasksCollection()?.let { collection ->
-        collection.orderBy("priority", Query.Direction.ASCENDING)
+    fun getAllTasks(): Flow<List<Task>> {
+        val collection = getUserTasksCollection() ?: return kotlinx.coroutines.flow.flowOf(emptyList())
+        return collection.orderBy("priority", Query.Direction.ASCENDING)
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .snapshots()
             .map { snapshot ->
                 snapshot.toObjects(Task::class.java)
             }
-    } ?: kotlinx.coroutines.flow.flowOf(emptyList())
+    }
 
     suspend fun insert(task: Task) {
         val collection = getUserTasksCollection() ?: return

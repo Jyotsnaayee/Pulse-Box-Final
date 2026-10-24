@@ -107,85 +107,131 @@ fun PackageStudioScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (selectedUri != null) {
-                ToolCard(
-                    title = "Actions",
-                    subtitle = "Convert or Extract your package",
-                    icon = Icons.Default.Build
-                ) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ActionButton(
-                            modifier = Modifier.weight(1f),
-                            text = "Convert to APK",
-                            icon = Icons.Default.Transform,
-                            onClick = {
-                                scope.launch {
-                                    isProcessing = true
-                                    processType = "Converting"
-                                    delay(3000)
-                                    resultMessage = "Successfully converted to APK"
-                                    safetyStatus = "COMPATIBLE: Device safe & verified"
-                                    isProcessing = false
-                                }
+    if (selectedUri != null) {
+        ToolCard(
+            title = "Actions",
+            subtitle = "Convert or Extract your package",
+            icon = Icons.Default.Build
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ActionButton(
+                    modifier = Modifier.weight(1f),
+                    text = "Convert to APK",
+                    icon = Icons.Default.Transform,
+                    onClick = {
+                        scope.launch {
+                            isProcessing = true
+                            processType = "Converting"
+                            val result = convertXapkToApk(context, selectedUri!!)
+                            resultMessage = if (result != null) "Converted: ${result.name}" else "Conversion Failed"
+                            if (result != null) {
+                                safetyStatus = checkApkSafety(context, result)
                             }
-                        )
-                        ActionButton(
-                            modifier = Modifier.weight(1f),
-                            text = "Extract ZIP",
-                            icon = Icons.Default.Unarchive,
-                            onClick = {
-                                scope.launch {
-                                    isProcessing = true
-                                    processType = "Extracting"
-                                    val success = extractZip(context, selectedUri!!)
-                                    resultMessage = if (success) "Extracted to Downloads" else "Extraction Failed"
-                                    isProcessing = false
-                                }
-                            }
-                        )
+                            isProcessing = false
+                        }
                     }
-                }
+                )
+                ActionButton(
+                    modifier = Modifier.weight(1f),
+                    text = "Extract ZIP",
+                    icon = Icons.Default.Unarchive,
+                    onClick = {
+                        scope.launch {
+                            isProcessing = true
+                            processType = "Extracting"
+                            val success = extractZip(context, selectedUri!!)
+                            resultMessage = if (success) "Extracted to Downloads/extracted" else "Extraction Failed"
+                            isProcessing = false
+                        }
+                    }
+                )
             }
+        }
+    }
 
-            if (isProcessing) {
-                Spacer(modifier = Modifier.height(24.dp))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = BluePriority)
+    if (isProcessing) {
+        Spacer(modifier = Modifier.height(24.dp))
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(color = BluePriority)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("$processType...", color = Color.White)
+        }
+    }
+
+    if (resultMessage != null) {
+        Spacer(modifier = Modifier.height(24.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = if (resultMessage!!.contains("Failed")) MaterialTheme.colorScheme.errorContainer else SurfaceDark)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        if (resultMessage!!.contains("Failed")) Icons.Default.Error else Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = if (resultMessage!!.contains("Failed")) MaterialTheme.colorScheme.error else Color.Green
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(resultMessage!!, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+                
+                if (safetyStatus != null) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("$processType...", color = Color.White)
-                }
-            }
-
-            if (resultMessage != null) {
-                Spacer(modifier = Modifier.height(24.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = if (resultMessage!!.contains("Failed")) MaterialTheme.colorScheme.errorContainer else SurfaceDark)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                if (resultMessage!!.contains("Failed")) Icons.Default.Error else Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = if (resultMessage!!.contains("Failed")) MaterialTheme.colorScheme.error else Color.Green
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(resultMessage!!, color = Color.White, fontWeight = FontWeight.Bold)
-                        }
-                        
-                        if (safetyStatus != null) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                safetyStatus!!,
-                                color = if (safetyStatus!!.contains("COMPATIBLE")) Color.Green else MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
-                    }
+                    Text(
+                        safetyStatus!!,
+                        color = if (safetyStatus!!.contains("COMPATIBLE")) Color.Green else MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
         }
+    }
+}
+
+private fun checkApkSafety(context: Context, file: File): String {
+    return try {
+        val packageManager = context.packageManager
+        val info = packageManager.getPackageArchiveInfo(file.absolutePath, 0)
+        if (info == null) {
+            "ERROR: Could not read APK info"
+        } else {
+            val minSdk = info.applicationInfo.minSdkVersion
+            val currentSdk = android.os.Build.VERSION.SDK_INT
+            if (minSdk > currentSdk) {
+                "INCOMPATIBLE: Requires API $minSdk (Current: $currentSdk)"
+            } else {
+                "COMPATIBLE: Safe for your device"
+            }
+        }
+    } catch (e: Exception) {
+        "ERROR: Safety check failed"
+    }
+}
+
+private suspend fun convertXapkToApk(context: Context, uri: Uri): File? = withContext(Dispatchers.IO) {
+    try {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
+        val zipInputStream = ZipInputStream(inputStream)
+        val outputDir = File(context.getExternalFilesDir(null), "converted")
+        if (!outputDir.exists()) outputDir.mkdirs()
+
+        var baseApk: File? = null
+        var entry = zipInputStream.nextEntry
+        while (entry != null) {
+            if (entry.name.endsWith(".apk") && (entry.name.contains("base") || baseApk == null)) {
+                val file = File(outputDir, entry.name)
+                FileOutputStream(file).use { output ->
+                    zipInputStream.copyTo(output)
+                }
+                baseApk = file
+            }
+            entry = zipInputStream.nextEntry
+        }
+        zipInputStream.close()
+        baseApk
+    } catch (e: Exception) {
+        null
     }
 }
 

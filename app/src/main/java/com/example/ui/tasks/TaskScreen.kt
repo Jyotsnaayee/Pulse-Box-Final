@@ -323,16 +323,58 @@ fun StatusItem(modifier: Modifier, value: String, label: String, sublabel: Strin
 @Composable
 fun WorkCompletionFlowPlaceholder() {
     Card(
-        modifier = Modifier.fillMaxWidth().height(200.dp),
+        modifier = Modifier.fillMaxWidth().height(220.dp),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceDark)
     ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.BarChart, contentDescription = null, tint = BluePriority, modifier = Modifier.size(48.dp))
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Work Completion Flow", color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Dual-bar comparison with trend lines", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.4f))
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.BarChart, contentDescription = null, tint = BluePriority, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text("Work Completion Flow", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                    Text("Dual-bar comparison with trend lines", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.4f))
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Box(modifier = Modifier.fillMaxSize()) {
+                androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                    val width = size.width
+                    val height = size.height
+                    val barWidth = width / 14
+                    val spacing = width / 7
+                    
+                    val data = listOf(0.4f, 0.6f, 0.8f, 0.5f, 0.9f, 0.7f, 0.3f)
+                    val data2 = listOf(0.2f, 0.4f, 0.5f, 0.3f, 0.7f, 0.5f, 0.2f)
+                    
+                    // Draw grid lines
+                    for (i in 0..4) {
+                        val y = height * (i / 4f)
+                        drawLine(
+                            color = Color.White.copy(alpha = 0.05f),
+                            start = androidx.compose.ui.geometry.Offset(0f, y),
+                            end = androidx.compose.ui.geometry.Offset(width, y),
+                            strokeWidth = 1.dp.toPx()
+                        )
+                    }
+                    
+                    data.forEachIndexed { index, value ->
+                        val x = index * spacing + spacing / 2
+                        // Bar 1
+                        drawRect(
+                            color = BluePriority.copy(alpha = 0.6f),
+                            topLeft = androidx.compose.ui.geometry.Offset(x - barWidth, height * (1 - value)),
+                            size = androidx.compose.ui.geometry.Size(barWidth, height * value)
+                        )
+                        // Bar 2
+                        drawRect(
+                            color = AmberPriority.copy(alpha = 0.6f),
+                            topLeft = androidx.compose.ui.geometry.Offset(x, height * (1 - data2[index])),
+                            size = androidx.compose.ui.geometry.Size(barWidth, height * data2[index])
+                        )
+                    }
+                }
             }
         }
     }

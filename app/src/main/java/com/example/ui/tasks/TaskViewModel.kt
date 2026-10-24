@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class TaskViewModel(private val repository: FirestoreTaskRepository) : ViewModel() {
 
-    val tasks: StateFlow<List<Task>> = repository.allTasks
+    val tasks: StateFlow<List<Task>> = repository.getAllTasks()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
