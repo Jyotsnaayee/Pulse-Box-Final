@@ -3,10 +3,12 @@ package com.example.ui.tools
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import com.example.ui.theme.*
 import androidx.compose.ui.unit.dp
 import com.example.ui.theme.Primary
 import java.io.File
@@ -248,20 +251,173 @@ fun ToolButton(text: String, icon: ImageVector, onClick: () -> Unit) {
 
 @Composable
 fun ApkDetailCard(info: PackageInfo, onClear: () -> Unit) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Package: ${info.packageName}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-            Text("Version: ${info.versionName} (${info.versionCode})", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { /* Install logic */ }, modifier = Modifier.fillMaxWidth()) {
-                Text("Install APK")
+    val context = LocalContext.current
+    val analysis = remember(info) { analyzeApk(context, info) }
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = info.packageName ?: "Unknown Package",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "Version: ${info.versionName} (${info.versionCode})",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.6f)
+                    )
+                }
+                
+                // Status Badge
+                Surface(
+                    color = analysis.statusColor.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, analysis.statusColor)
+                ) {
+                    Text(
+                        text = analysis.statusText,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = analysis.statusColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
+            Divider(color = Color.White.copy(alpha = 0.05f))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Analysis Results
+            Text("Analysis Results", style = MaterialTheme.typography.labelLarge, color = Color.White, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            AnalysisItem(
+                label = "Compatibility",
+                value = if (analysis.isCompatible) "OK - Supported" else "Incompatible - Min SDK ${info.applicationInfo?.minSdkVersion ?: "Unknown"}",
+                icon = if (analysis.isCompatible) Icons.Default.CheckCircle else Icons.Default.Error,
+                color = if (analysis.isCompatible) GreenPriority else RedPriority
+            )
+            
             Spacer(modifier = Modifier.height(8.dp))
-            TextButton(onClick = onClear, modifier = Modifier.fillMaxWidth()) {
-                Text("Clear")
+            
+            AnalysisItem(
+                label = "Security Check",
+                value = analysis.securityMessage,
+                icon = if (analysis.isSuspicious) Icons.Default.Warning else Icons.Default.Shield,
+                color = if (analysis.isSuspicious) AmberPriority else GreenPriority
+            )
+
+            if (analysis.suspiciousPermissions.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    "Sensitive Permissions Detected:",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AmberPriority,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    analysis.suspiciousPermissions.joinToString(", "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.6f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(
+                    onClick = { /* Install logic */ },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                    enabled = analysis.isCompatible
+                ) {
+                    Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Install")
+                }
+                OutlinedButton(
+                    onClick = onClear,
+                    modifier = Modifier.weight(1f),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                ) {
+                    Text("Clear")
+                }
             }
         }
     }
+}
+
+@Composable
+fun AnalysisItem(label: String, value: String, icon: ImageVector, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            Text(label, style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.4f))
+            Text(value, style = MaterialTheme.typography.bodySmall, color = Color.White)
+        }
+    }
+}
+
+data class ApkAnalysis(
+    val isCompatible: Boolean,
+    val isSuspicious: Boolean,
+    val securityMessage: String,
+    val suspiciousPermissions: List<String>,
+    val statusText: String,
+    val statusColor: Color
+)
+
+private fun analyzeApk(context: Context, info: PackageInfo): ApkAnalysis {
+    val currentSdk = android.os.Build.VERSION.SDK_INT
+    val minSdk = info.applicationInfo?.minSdkVersion ?: 0
+    val isCompatible = currentSdk >= minSdk
+    
+    val sensitivePermissions = listOf(
+        "android.permission.SEND_SMS",
+        "android.permission.RECEIVE_SMS",
+        "android.permission.READ_CALL_LOG",
+        "android.permission.PROCESS_OUTGOING_CALLS",
+        "android.permission.READ_SMS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION"
+    )
+    
+    val detectedSensitive = info.requestedPermissions?.filter { it in sensitivePermissions } ?: emptyList()
+    val isSuspicious = detectedSensitive.size >= 3 || (detectedSensitive.contains("android.permission.SEND_SMS") && detectedSensitive.size >= 2)
+    
+    val securityMessage = when {
+        isSuspicious -> "Suspicious - Multiple sensitive permissions"
+        detectedSensitive.isNotEmpty() -> "Warning - Uses sensitive permissions"
+        else -> "OK - No critical risks detected"
+    }
+    
+    val (statusText, statusColor) = when {
+        !isCompatible -> "Incompatible" to RedPriority
+        isSuspicious -> "Risk Detected" to AmberPriority
+        else -> "OK" to GreenPriority
+    }
+    
+    return ApkAnalysis(
+        isCompatible = isCompatible,
+        isSuspicious = isSuspicious,
+        securityMessage = securityMessage,
+        suspiciousPermissions = detectedSensitive.map { it.split(".").last() },
+        statusText = statusText,
+        statusColor = statusColor
+    )
 }
 
 // Logic Helpers
@@ -274,7 +430,7 @@ private fun getApkInfo(context: Context, uri: Uri): PackageInfo? {
                 input.copyTo(output)
             }
         }
-        context.packageManager.getPackageArchiveInfo(file.absolutePath, 0)
+        context.packageManager.getPackageArchiveInfo(file.absolutePath, PackageManager.GET_PERMISSIONS)
     } catch (e: Exception) {
         null
     }
