@@ -1,0 +1,6 @@
+{
+  "name": "PulseBox",
+  "description": "An all-in-one utility hub and productivity task manager with animated progress tracking and smart reminders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

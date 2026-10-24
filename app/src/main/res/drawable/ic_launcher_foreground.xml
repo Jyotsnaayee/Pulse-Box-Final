@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Toolbox Shape -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,42C30,39.79 31.79,38 34,38H44V34C44,31.79 45.79,30 48,30H60C62.21,30 64,31.79 64,34V38H74C76.21,38 78,39.79 78,42V74C78,76.21 76.21,78 74,78H34C31.79,78 30,76.21 30,74V42ZM48,34V38H60V34H48Z" />
+    <!-- Pulse Line -->
+    <path
+        android:pathData="M35,58H42L45,45L53,70L59,52L63,58H73"
+        android:strokeColor="#6200EE"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2.5" />
+</vector>
