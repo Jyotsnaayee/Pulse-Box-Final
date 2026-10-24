@@ -37,7 +37,7 @@ fun HomeScreen(onToolClick: (String) -> Unit) {
         }
     }
 
-    val pinnedTools = allTools.filter { it.id in listOf("calculator", "unit_converter", "pdf_reader", "apk_fixer") }
+    val pinnedTools = allTools.filter { it.id in listOf("calculator", "unit_converter", "pdf_reader", "package_studio") }
 
     Column(
         modifier = Modifier

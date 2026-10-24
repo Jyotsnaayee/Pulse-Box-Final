@@ -30,7 +30,7 @@ val allTools = listOf(
     Tool("qr_scanner", "QR Scanner", "Scan & Open", Icons.Default.QrCodeScanner, "qr_scanner"),
     Tool("pdf_reader", "PDF Studio", "Pro PDF Viewer", Icons.Default.PictureAsPdf, "pdf_reader"),
     Tool("file_reader", "Universal Reader", "Open Any File", Icons.Default.FileOpen, "file_reader"),
-    Tool("apk_fixer", "APK Fixer", "Build & Fix APKs", Icons.Default.Camera, "apk_fixer"), // Using Camera as placeholder icon for "System/Build"
+    Tool("package_studio", "Package Studio", "APK/XAPKS/ZIP Tools", Icons.Default.Camera, "package_studio"),
     Tool("compressor", "Compressor", "Shrink Images", Icons.Default.Compress, "compressor"),
     Tool("wallpaper", "Wallpapers", "HD Backgrounds", Icons.Default.Image, "wallpaper"),
     Tool("news", "News Hub", "India & Global", Icons.Default.Newspaper, "news")

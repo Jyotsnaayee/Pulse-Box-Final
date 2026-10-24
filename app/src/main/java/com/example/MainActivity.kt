@@ -72,7 +72,7 @@ fun PulseBoxApp(repository: TaskRepository) {
             composable("qr_scanner") { QRScannerScreen(onBack = { navController.popBackStack() }) }
             composable("pdf_reader") { UniversalReaderScreen(onBack = { navController.popBackStack() }) }
             composable("file_reader") { UniversalReaderScreen(onBack = { navController.popBackStack() }) }
-            composable("apk_fixer") { APKFixerScreen(onBack = { navController.popBackStack() }) }
+            composable("package_studio") { PackageStudioScreen(onBack = { navController.popBackStack() }) }
             composable("compressor") { UniversalReaderScreen(onBack = { navController.popBackStack() }) }
             composable("wallpaper") { WallpaperScreen(onBack = { navController.popBackStack() }) }
             composable("news") { NewsHubScreen(onBack = { navController.popBackStack() }) }
