@@ -11,12 +11,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.data.AppDatabase
-import com.example.data.TaskRepository
+import com.example.data.FirestoreTaskRepository
+import com.example.data.auth.AuthRepository
+import com.example.ui.auth.LoginScreen
+import com.example.ui.auth.LoginViewModel
+import com.example.ui.auth.LoginViewModelFactory
 import com.example.ui.home.HomeScreen
 import com.example.ui.tasks.TaskScreen
 import com.example.ui.tasks.TaskViewModel
@@ -29,19 +35,26 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        val database = AppDatabase.getDatabase(this)
-        val repository = TaskRepository(database.taskDao())
+        val authRepository = AuthRepository(this)
+        val firestoreRepository = FirestoreTaskRepository()
         
         setContent {
             PulseBoxTheme {
-                PulseBoxApp(repository)
+                val currentUser by authRepository.currentUser.collectAsState()
+                
+                if (currentUser == null) {
+                    val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(authRepository))
+                    LoginScreen(viewModel = loginViewModel, onSuccess = {})
+                } else {
+                    PulseBoxApp(firestoreRepository, authRepository)
+                }
             }
         }
     }
 }
 
 @Composable
-fun PulseBoxApp(repository: TaskRepository) {
+fun PulseBoxApp(repository: FirestoreTaskRepository, authRepository: AuthRepository) {
     val navController = rememberNavController()
     val taskViewModel: TaskViewModel = viewModel(factory = TaskViewModelFactory(repository))
     
@@ -56,7 +69,11 @@ fun PulseBoxApp(repository: TaskRepository) {
             composable("home") {
                 HomeScreen(
                     onToolClick = { route ->
-                        navController.navigate(route)
+                        if (route == "sign_out") {
+                            authRepository.signOut()
+                        } else {
+                            navController.navigate(route)
+                        }
                     }
                 )
             }

@@ -443,6 +443,19 @@ fun TaskItem(task: Task, onToggle: () -> Unit, onDelete: () -> Unit) {
                         color = Color.White.copy(alpha = 0.3f)
                     )
                 }
+                if (task.isReminderEnabled) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = BluePriority, modifier = Modifier.size(12.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Reminder set",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = BluePriority,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White.copy(alpha = 0.2f), modifier = Modifier.size(20.dp))

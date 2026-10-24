@@ -3,16 +3,16 @@ package com.example.ui.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.data.FirestoreTaskRepository
 import com.example.data.Priority
 import com.example.data.Task
-import com.example.data.TaskRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
+class TaskViewModel(private val repository: FirestoreTaskRepository) : ViewModel() {
 
     val tasks: StateFlow<List<Task>> = repository.allTasks
         .stateIn(
@@ -66,7 +66,7 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
     }
 }
 
-class TaskViewModelFactory(private val repository: TaskRepository) : ViewModelProvider.Factory {
+class TaskViewModelFactory(private val repository: FirestoreTaskRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(TaskViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

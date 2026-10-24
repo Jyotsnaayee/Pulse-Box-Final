@@ -14,7 +14,8 @@ data class Task(
     val isReminderEnabled: Boolean = false,
     val reminderDuration: Int = 30, // seconds
     val reminderSound: String = "System Default",
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val firestoreId: String? = null
 )
 
 enum class Priority {
