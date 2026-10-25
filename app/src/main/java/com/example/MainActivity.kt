@@ -35,7 +35,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        FirebaseApp.initializeApp(this)
         val authRepository = AuthRepository(this)
         val firestoreRepository = FirestoreTaskRepository()
         

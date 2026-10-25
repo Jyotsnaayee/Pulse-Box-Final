@@ -6,15 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.FirestoreTaskRepository
 import com.example.data.Priority
 import com.example.data.Task
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class TaskViewModel(private val repository: FirestoreTaskRepository) : ViewModel() {
 
     val tasks: StateFlow<List<Task>> = repository.getAllTasks()
+        .catch { emit(emptyList()) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

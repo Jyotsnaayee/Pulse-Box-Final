@@ -503,7 +503,7 @@ fun TaskItem(task: Task, onToggle: () -> Unit, onDelete: () -> Unit) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White.copy(alpha = 0.2f), modifier = Modifier.size(20.dp))
             }
         }
-        Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.White.copy(alpha = 0.05f))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.White.copy(alpha = 0.05f))
     }
 }
 
